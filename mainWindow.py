@@ -17,7 +17,9 @@ class Window():
 
         # tworzenie ramki do wyświetlania czy układ jest stabilny
         self.stabilityFrame = tk.LabelFrame(self.dataFrame, relief="groove")
+
         self.stabilityFrame.pack(side="top", fill="x")
+
         self.stability_label = tk.Label(self.stabilityFrame, text = "Czy jest stabilny?", font = 20)
         self.stability_label.pack(fill="both", ipady = 5, pady = 2, padx = 2)
               

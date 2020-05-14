@@ -14,7 +14,9 @@ class Graphs:
 
         self.tab1 = ttk.Frame(self.tab_control)
         self.tab_control.add(self.tab1, text = "Sygnał wejściowy")
-        self.add_signal(self.impulse.time, self.impulse.input_singal, self.tab1, "u(t)")
+
+        self.add_signal(self.impulse.time, self.impulse.input_singal, self.tab1, "x(t)")
+
 
         self.tab2 = ttk.Frame(self.tab_control)
         self.tab_control.add(self.tab2, text = "Sygnał wyjściowy")
