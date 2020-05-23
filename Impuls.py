@@ -26,34 +26,43 @@ class Impuls:
         self.s1 = signal.lti([self.b[3], self.b[2], self.b[1], self.b[0]], [1, self.a[2], self.a[1], self.a[0]])
         self.w, self.wzm, self.faza = signal.bode(self.s1)
 
-
-    def calculations(self):
+    
+    def calculations(self) :
         # wyznaczanie czasu
         sum = 0
-        for _ in range(int(self.settings['duration'])*(int(1.0/self.resolution))-1):
+        for _ in range(int(self.settings['duration']) * (int(1.0 / self.resolution)) - 1) :
             sum += self.resolution
             self.time.append(sum)
 
-        # wyznaczanie sygnału wejściowego 
-        if self.radSelected == 1: # prostokatny
-            self.input_singal = [self.settings["amplitude"] * signal.square(2 * math.pi * (1 / self.settings["period"]) * i, 
-                                     self.settings["fulfillment"] / 100.) for i in self.time]
+        # wyznaczanie sygnału wejściowego
+        if self.radSelected == 1 :  # prostokatny
+            self.input_singal = [
+                self.settings["amplitude"] if t % self.settings["period"] < (self.settings["fulfillment"] / 100.) *
+                                              self.settings["period"]
+                else -self.settings["amplitude"] for t in self.time]
 
-        elif self.radSelected == 2: # skok
+        elif self.radSelected == 2 :  # skok
             self.input_singal = [self.settings["amplitude"] if i >= self.settings["start"] else 0 for i in self.time]
 
-        elif self.radSelected == 3: # sinusoida
-            self.input_singal = [self.settings["amplitude"] * math.sin(2 * math.pi * (1 / self.settings["period"]) * i) for i in self.time]
+        elif self.radSelected == 3 :  # sinusoida
+            self.input_singal = [self.settings["amplitude"] * math.sin(2 * math.pi * (1 / self.settings["period"]) * i)
+                                 for i in self.time]
 
-        elif self.radSelected == 4: # trojkatny
-            self.input_singal = [2 * self.settings["amplitude"] * signal.square(2 * math.pi * (1 / self.settings["period"]) * i, 0.5) for i in self.time]
-            self.input_singal = self.calkowanie(self.input_singal)
+        elif self.radSelected == 4 :  # trojkatny
+            sum = 0
+            for t in self.time :
+                if t % (self.settings["period"]) <= 0.5 * self.settings["period"] :
+                    self.input_singal.append(
+                        (t % self.settings["period"]) * (self.settings["amplitude"] / (0.5 * self.settings["period"])))
+                else :
+                    self.input_singal.append((t % self.settings["period"] - self.settings["period"]) * (
+                            -self.settings["amplitude"] / (0.5 * self.settings["period"])))
 
         # wyznaczanie sygnału wyjściowego
         self.output_signal = [0 for _ in range(math.floor(len(self.input_singal) / self.step))]
         v = [0, 0, 0, 0]
         v[3] = self.input_singal
-        for _ in range(int(self.settings["duration"]/self.resolution)):
+        for _ in range(int(self.settings["duration"] / self.resolution)) :
             v[2] = self.calkowanie(v[3])
             v[1] = self.calkowanie(v[2])
             v[0] = self.calkowanie(v[1])
