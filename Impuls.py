@@ -3,8 +3,10 @@ from tkinter import ttk
 from scipy import signal
 import math
 
+from Graphs import *
 class Impuls:
-    def __init__(self, impulsFrame, num_a, num_b, settings, radSelected, resolution):
+
+    def __init__(self, impulsFrame, num_a, num_b, settings, radSelected, resolution, step_size):
         self.impulsFrame = impulsFrame
 
         self.a = self.convert(num_a)
@@ -12,7 +14,8 @@ class Impuls:
         self.settings = self.convert_dict(settings)
         self.radSelected = radSelected
         self.resolution = float(resolution.get())
-
+        self.step = int((1./self.resolution)*float(step_size.get()))
+        Graphs.step_init(Graphs, self.step)
         self.input_singal = []
         self.output_signal = []
         self.time = [0]
@@ -23,8 +26,6 @@ class Impuls:
         self.s1 = signal.lti([self.b[3], self.b[2], self.b[1], self.b[0]], [1, self.a[2], self.a[1], self.a[0]])
         self.w, self.wzm, self.faza = signal.bode(self.s1)
 
-
-    
 
     def calculations(self):
         # wyznaczanie czasu
@@ -49,10 +50,10 @@ class Impuls:
             self.input_singal = self.calkowanie(self.input_singal)
 
         # wyznaczanie sygnału wyjściowego
-        self.output_signal = [0 for _ in range(len(self.input_singal))]
+        self.output_signal = [0 for _ in range(math.floor(len(self.input_singal) / self.step))]
         v = [0, 0, 0, 0]
         v[3] = self.input_singal
-        for _ in range(math.ceil(self.max_ab / 3.5) *100):
+        for _ in range(int(self.settings["duration"]/self.resolution)):
             v[2] = self.calkowanie(v[3])
             v[1] = self.calkowanie(v[2])
             v[0] = self.calkowanie(v[1])
@@ -65,20 +66,21 @@ class Impuls:
         v = self.wzmocnienie(1, v)
         self.output_signal = self.dodawanie(self.output_signal, v[3], v[2], v[1], v[0])
 
-                  
 
     def calkowanie(self, data):
         sum = 0
-        integral = [0,0]
-        for i in range(1,len(data)-1):
-            sum += (data[i] + data[i+1]) * (self.time[i+1] - self.time[i])/ 2.
+        integral = [data[0]]
+        dx = self.time[self.step] - self.time[0]
+        for f in data[1:]:
+            sum += f * dx /2.
             integral.append(sum)
         return integral
     
     def odejmowanie(self, v2, v1, v0):
         wynik = [0]
-        for i in range(len(self.input_singal)-1) :
-            wynik.append(self.input_singal[i] - v2[i] - v1[i] - v0[i])
+        i = 0
+        for i in range(len(self.input_singal[0::self.step])):
+            wynik.append(self.input_singal[0::self.step][i] - v2[i] - v1[i] - v0[i])
         return wynik
 
     def dodawanie(self, wyjscie, v3, v2, v1, v0):
@@ -104,12 +106,12 @@ class Impuls:
 
     # funkcja zwracajaca czy uklad jest stabilny 
     def is_stable(self):
-        if any(self.a) < 0:
-             print("Układ jest niestabilny")
-             return False
-        elif self.a[2] > 0 and self.a[2]*self.a[1] - self.a[0] > 0: 
-            print("Układ jest stabilny")
-            return True
+        if self.a[0] <= 0 or self.a[1] <= 0 or self.a[2] <= 0:
+             return 0
+        elif self.a[2]*self.a[1] - self.a[0] == 0:
+            return 1
+        elif self.a[2] > 0 and self.a[2]*self.a[1] - self.a[0] > 0:
+            return 2
 
     # funkcja konwertujaca StringVar to int
     def convert(self, num_x):
@@ -142,6 +144,7 @@ class Impuls:
         print(self.settings['duration'])
         print(self.settings['fulfillment'])
         print(self.settings['start'])
+        print(self.step)
 
     def is_number(self, s):
         try:

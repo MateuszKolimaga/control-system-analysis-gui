@@ -17,14 +17,12 @@ class Window():
 
         # tworzenie ramki do wyświetlania czy układ jest stabilny
         self.stabilityFrame = tk.LabelFrame(self.dataFrame, relief="groove")
-
-        self.stabilityFrame.pack(side="top", fill="x")
-
-        self.stability_label = tk.Label(self.stabilityFrame, text = "Czy jest stabilny?", font = 20)
+        self.stabilityFrame.pack(side="top", fill="x", padx = 2)
+        self.stability_label = tk.Label(self.stabilityFrame, text = "Czy jest stabilny?", font = "Arial 16")
         self.stability_label.pack(fill="both", ipady = 5, pady = 2, padx = 2)
               
         # przycisk do wykreslenia wykresow
-        self.draw_button = tk.Button(self.dataFrame, text = "Rysuj", font = 17, relief="groove", command = self.draw_function)
+        self.draw_button = tk.Button(self.dataFrame, text = "Rysuj", font = "Arial 16", relief="groove", command = self.draw_function)
         self.draw_button.pack(side="bottom", fill="x", ipady = 5, pady = 2, padx = 2)
 
         self.drawFrame = tk.LabelFrame(master, text = "Wykresy", relief="groove")
@@ -37,10 +35,12 @@ class Window():
         self.impulse = self.dataEntry.get_impuls()
         self.impulse.wyswietl_wspolczynniki()
 
-        if self.impulse.is_stable():
-            self.stability_label.config(text = "STABILNY", compound = "center", foreground = "green")
-        else:
+        if self.impulse.is_stable() == 0:
             self.stability_label.config(text = "NIESTABILNY", compound = "center", foreground = "red")
+        elif self.impulse.is_stable() == 1:
+            self.stability_label.config(text = "NA GRANICY STABILNOŚCI", compound="center", foreground="orange")
+        elif self.impulse.is_stable() == 2:
+            self.stability_label.config(text = "STABILNY", compound = "center", foreground = "green")
 
         self.Graphs = Graphs(self.drawFrame, self.impulse)
 
