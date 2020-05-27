@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from scipy import signal
+import numpy as np
 import math
 
 from Graphs import *
@@ -23,8 +23,8 @@ class Impuls:
 
         self.calculations()
 
-        self.s1 = signal.lti([self.b[3], self.b[2], self.b[1], self.b[0]], [1, self.a[2], self.a[1], self.a[0]])
-        self.w, self.wzm, self.faza = signal.bode(self.s1)
+        self.w, self.mag, self.phase = 0, 0, 0
+        self.bode()
 
     
     def calculations(self) :
@@ -63,20 +63,20 @@ class Impuls:
         v = [0, 0, 0, 0]
         v[3] = self.input_singal
         for _ in range(int(self.settings["duration"] / self.resolution)) :
-            v[2] = self.calkowanie(v[3])
-            v[1] = self.calkowanie(v[2])
-            v[0] = self.calkowanie(v[1])
-            v = self.wzmocnienie(0, v)
-            v[3] = self.odejmowanie(v[2], v[1], v[0])
+            v[2] = self.integrate(v[3])
+            v[1] = self.integrate(v[2])
+            v[0] = self.integrate(v[1])
+            v = self.amplifying(0, v)
+            v[3] = self.subtracting(v[2], v[1], v[0])
         i = len(v) - 1
         while i >= 0 :
-            if i != 3 : v[i] = self.calkowanie(v[i + 1])
+            if i != 3 : v[i] = self.integrate(v[i + 1])
             i -= 1
-        v = self.wzmocnienie(1, v)
-        self.output_signal = self.dodawanie(self.output_signal, v[3], v[2], v[1], v[0])
+        v = self.amplifying(1, v)
+        self.output_signal = self.adding(self.output_signal, v[3], v[2], v[1], v[0])
 
 
-    def calkowanie(self, data):
+    def integrate(self, data):
         sum = 0
         integral = [data[0]]
         dx = self.time[self.step] - self.time[0]
@@ -85,32 +85,32 @@ class Impuls:
             integral.append(sum)
         return integral
     
-    def odejmowanie(self, v2, v1, v0):
-        wynik = [0]
+    def subtracting(self, v2, v1, v0):
+        result = [0]
         i = 0
         for i in range(len(self.input_singal[0::self.step])):
-            wynik.append(self.input_singal[0::self.step][i] - v2[i] - v1[i] - v0[i])
-        return wynik
+            result.append(self.input_singal[0::self.step][i] - v2[i] - v1[i] - v0[i])
+        return result
 
-    def dodawanie(self, wyjscie, v3, v2, v1, v0):
-        wynik = []
-        for i in range(len(wyjscie)) :
-            wynik.append(wyjscie[i] + v3[i] + v2[i] + v1[i] + v0[i])
-        return wynik
+    def adding(self, out, v3, v2, v1, v0):
+        result = []
+        for i in range(len(out)) :
+            result.append(out[i] + v3[i] + v2[i] + v1[i] + v0[i])
+        return result
 
-    def mnozenie(self, p, v):
-        wynik = []
+    def multiplying(self, p, v):
+        result = []
         for i in range(len(v)) :
-            wynik.append(p * v[i])
-        return wynik
+            result.append(p * v[i])
+        return result
 
-    def wzmocnienie(self, wejscie_czy_wyjscie, v):
-        if wejscie_czy_wyjscie == 0 :
+    def amplifying(self, in_or_out, v):
+        if in_or_out == 0 :
             for i in range(len(self.a)) :
-                v[i] = self.mnozenie(self.a[i], v[i])
+                v[i] = self.multiplying(self.a[i], v[i])
         else :
             for i in range(len(self.b)) :
-                v[i] = self.mnozenie(self.b[i], v[i])
+                v[i] = self.multiplying(self.b[i], v[i])
         return v
 
     # funkcja zwracajaca czy uklad jest stabilny 
@@ -141,19 +141,6 @@ class Impuls:
             else:
                 d[k] = 0
         return d
-    
-    def wyswietl_wspolczynniki(self):
-        print("Oto lista wspolczynnikow a: ")
-        print(self.a)
-        print("Oto lista wspolczynnikow b: ")
-        print(self.b)
-        print("Ustawienia")
-        print(self.settings['amplitude'])
-        print(self.settings['period'])
-        print(self.settings['duration'])
-        print(self.settings['fulfillment'])
-        print(self.settings['start'])
-        print(self.step)
 
     def is_number(self, s):
         try:
@@ -161,3 +148,59 @@ class Impuls:
             return True
         except ValueError:
             return False
+
+    def calculate_pha(self,a,b,w,dt):
+        s = b[1] * w - b[3] * (w ** 3)
+        p = b[0] - b[2] * (w ** 2)
+        r = a[1] * w - 1 * (w ** 3)
+        t = a[0] - a[2] * (w ** 2)
+        value1 =0
+        try:
+            value1 = np.rad2deg(np.arctan(s / p) - np.arctan(r / t))
+        except:
+            s = b[1] * w - b[3] * ((w - dt) ** 3)
+            p = b[0] - b[2] * ((w - dt) ** 2)
+            r = a[1] * w - 1 * ((w - dt) ** 3)
+            t = a[0] - a[2] * ((w - dt) ** 2)
+            value1 = np.rad2deg(np.arctan(s / p) - np.arctan(r / t))
+
+        return value1;
+
+
+    def calculate(self,a,b,w,dt):
+        s = b[1] * w - b[3] * (w ** 3)
+        p = b[0] - b[2] * (w ** 2)
+        r = a[1] * w - (w ** 3)
+        t = a[0] - a[2] * (w ** 2)
+        try:
+            value1 = math.log10((s ** 2 + p ** 2) ** 10)
+        except:
+            try:
+                s = b[1] * w - b[3] * ((w-dt)** 3)
+                p = b[0] - b[2] * ((w-dt) ** 2)
+                value1 = math.log10((s ** 2 + p ** 2) ** 10)
+            except:
+                value1 = 0
+
+        try:
+            value2 = math.log10( (r**2 + t**2 )**10 )
+        except:
+            try:
+                r = a[1] * w - ((w - dt) ** 3)
+                t = a[0] - a[2] * ((w - dt) ** 2)
+                value2 = math.log10((r ** 2 + t ** 2) ** 10)
+            except:
+                value2 = 0
+
+        return value1 - value2
+
+
+    def bode(self):
+        self.phase = []
+        self.mag = []
+        dt = 0.01
+        self.w = np.arange(dt, 100.0, dt)
+        for i in self.w:
+            self.phase.append(self.calculate_pha(self.a, self.b, i, dt))
+            self.mag.append(self.calculate(self.a, self.b, i, dt))
+

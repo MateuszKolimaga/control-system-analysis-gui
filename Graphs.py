@@ -58,7 +58,7 @@ class Graphs:
         fa = Figure(figsize=(4,4), dpi=100)
 
         aa = fa.add_subplot(1,1,1)
-        aa.semilogx(self.impulse.w, self.impulse.wzm, color="blue", linewidth='1')
+        aa.semilogx(self.impulse.w, self.impulse.mag, color="blue", linewidth='1')
 
         aa.set_xlabel("Czestotliwosc")
         aa.set_ylabel("Wzmocnienie")
@@ -72,7 +72,7 @@ class Graphs:
         fp = Figure(figsize=(4,4), dpi=100)
 
         ap = fp.add_subplot(1,1,1)
-        ap.semilogx(self.impulse.w, self.impulse.faza, color="blue", linewidth='1')
+        ap.semilogx(self.impulse.w, self.impulse.phase, color="blue", linewidth='1')
 
         ap.set_xlabel("Czestotliwosc")
         ap.set_ylabel("Faza")

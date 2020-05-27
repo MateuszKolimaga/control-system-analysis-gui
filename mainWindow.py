@@ -33,7 +33,6 @@ class Window():
             widget.destroy()
 
         self.impulse = self.dataEntry.get_impuls()
-        self.impulse.wyswietl_wspolczynniki()
 
         if self.impulse.is_stable() == 0:
             self.stability_label.config(text = "NIESTABILNY", compound = "center", foreground = "red")
