@@ -81,7 +81,7 @@ class Impuls:
         integral = [data[0]]
         dx = self.time[self.step] - self.time[0]
         for f in data[1:]:
-            sum += f * dx /2.
+            sum += f * dx 
             integral.append(sum)
         return integral
     
