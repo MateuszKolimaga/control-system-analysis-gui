@@ -150,7 +150,6 @@ class Impuls:
             return False
 
     def calculate_pha(self,a,b,w,dt):
-            def calculate_pha(self, a, b, w, dt) :
         s = b[1] * w - b[3] * (w ** 3)
         p = b[0] - b[2] * (w ** 2)
         r = a[1] * w - 1 * (w ** 3)
