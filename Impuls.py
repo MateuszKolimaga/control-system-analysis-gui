@@ -150,21 +150,16 @@ class Impuls:
             return False
 
     def calculate_pha(self,a,b,w,dt):
+            def calculate_pha(self, a, b, w, dt) :
         s = b[1] * w - b[3] * (w ** 3)
         p = b[0] - b[2] * (w ** 2)
         r = a[1] * w - 1 * (w ** 3)
         t = a[0] - a[2] * (w ** 2)
-        value1 =0
-        try:
-            value1 = np.rad2deg(np.arctan(s / p) - np.arctan(r / t))
-        except:
-            s = b[1] * w - b[3] * ((w - dt) ** 3)
-            p = b[0] - b[2] * ((w - dt) ** 2)
-            r = a[1] * w - 1 * ((w - dt) ** 3)
-            t = a[0] - a[2] * ((w - dt) ** 2)
-            value1 = np.rad2deg(np.arctan(s / p) - np.arctan(r / t))
-
-        return value1;
+        value1 = np.arctan2(s,p);
+        value2 = np.arctan2(r,t);
+        if value1 < 0: value1 += 2*math.pi
+        if value2 < 0 : value2 += 2 * math.pi
+        return  np.rad2deg(value1- value2)
 
 
     def calculate(self,a,b,w,dt):
