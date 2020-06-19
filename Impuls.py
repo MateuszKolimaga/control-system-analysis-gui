@@ -154,11 +154,16 @@ class Impuls:
         p = b[0] - b[2] * (w ** 2)
         r = a[1] * w - 1 * (w ** 3)
         t = a[0] - a[2] * (w ** 2)
-        value1 = np.arctan2(s,p);
-        value2 = np.arctan2(r,t);
-        if value1 < 0: value1 += 2*math.pi
-        if value2 < 0 : value2 += 2 * math.pi
-        return  np.rad2deg(value1- value2)
+
+        rad_value1 = np.arctan2(s,p)
+        rad_value2 = np.arctan2(r,t)
+        deg_value1 = np.rad2deg(rad_value1)
+        deg_value2 = np.rad2deg(rad_value2)
+
+        if deg_value1 < 0 : deg_value1 += 2 * math.pi
+        if deg_value2 < 0 : deg_value2 += 2 * math.pi
+
+        return  deg_value1 - deg_value2
 
 
     def calculate(self,a,b,w,dt):

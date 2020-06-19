@@ -34,7 +34,7 @@ class Graphs:
         self.add_bode_amp()
 
         self.tab4 = ttk.Frame(self.tab_control)
-        self.tab_control.add(self.tab4, text = "Wykres częstotliwościowy")
+        self.tab_control.add(self.tab4, text = "Wykres fazowy")
         self.add_bode_phase()
 
         self.tab_control.pack(expan = 1, fill = "both")
